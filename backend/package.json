@@ -1,10 +1,10 @@
 {
   "name": "catalogue-backend",
   "version": "1.0.0",
-  "scripts": {
+ "scripts": {
   "start": "nest start",
   "start:dev": "nest start --watch",
-  "build": "npx nest build",
+  "build": "node ./node_modules/@nestjs/cli/bin/nest.js build",
   "start:prod": "node dist/main.js"
 },
   "dependencies": {
