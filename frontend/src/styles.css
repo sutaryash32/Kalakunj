@@ -271,6 +271,24 @@ textarea{resize:vertical;min-height:60px;}
 }
 .token-actions{display:flex;gap:10px;}
 .token-actions .btn{flex:1;}
+.crop-overlay{
+  position:fixed;inset:0;background:rgba(20,24,32,0.65);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;z-index:60;padding:20px;
+}
+.crop-box{
+  background:var(--card);border-radius:20px;padding:20px;width:100%;max-width:420px;
+  box-shadow: 10px 10px 24px var(--shadow-d), -10px -10px 24px var(--shadow-l);
+  display:flex;flex-direction:column;gap:12px;
+}
+.crop-box h3{font-family:'Space Grotesk',sans-serif;font-size:15px;margin:0;}
+.crop-stage{position:relative;width:100%;height:260px;border-radius:14px;overflow:hidden;background:var(--bg);}
+.zoom-slider{
+  width:100%;border:none;border-radius:10px;height:6px;accent-color:var(--accent);
+  background:linear-gradient(to right, var(--shadow-d), var(--shadow-l));outline:none;
+}
+.crop-actions{display:flex;gap:10px;}
+.crop-actions .btn{flex:1;}
+.crop-actions .logout-btn{flex:1;}
 .drag-handle{
   display:flex;align-items:center;justify-content:center;
   color:var(--text-faint);font-size:16px;cursor:grab;

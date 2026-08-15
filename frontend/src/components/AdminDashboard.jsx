@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import Cropper from 'react-easy-crop';
+import { getCroppedImageFile } from '../utils/cropImage.js';
 
 export default function AdminDashboard() {
   const [token, setToken] = useState(() => sessionStorage.getItem('admin-token'));
@@ -12,6 +14,11 @@ export default function AdminDashboard() {
   const [uploadedUrl, setUploadedUrl] = useState(null);
   const [toast, setToast] = useState('');
   const [dragIndex, setDragIndex] = useState(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [rawImageSrc, setRawImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   useEffect(() => {
     if (token) refreshList();
@@ -66,13 +73,42 @@ export default function AdminDashboard() {
   async function handleFileChange(e) {
     const file = e.target.files[0];
     if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setRawImageSrc(reader.result);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
+      setCropModalOpen(true);
+      e.target.value = '';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function onCropComplete(_, pixels) {
+    setCroppedAreaPixels(pixels);
+  }
+
+  async function confirmCrop() {
+    if (!rawImageSrc || !croppedAreaPixels) return;
     try {
-      const res = await api.uploadImage(token, file);
+      const croppedFile = await getCroppedImageFile(rawImageSrc, croppedAreaPixels, 'product.jpg');
+      const res = await api.uploadImage(token, croppedFile);
       setUploadedUrl(res.url);
       setPreview(res.url);
     } catch (e) {
       handleApiError(e, 'Upload failed — check Cloudinary credentials on the backend');
+    } finally {
+      setCropModalOpen(false);
+      setRawImageSrc(null);
+      setCroppedAreaPixels(null);
     }
+  }
+
+  function cancelCrop() {
+    setCropModalOpen(false);
+    setRawImageSrc(null);
+    setCroppedAreaPixels(null);
   }
 
   async function handleAdd() {
@@ -173,6 +209,38 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-wrap">
+      {cropModalOpen && (
+        <div className="crop-overlay">
+          <div className="crop-box">
+            <h3>Crop image</h3>
+            <div className="crop-stage">
+              <Cropper
+                image={rawImageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={340 / 520}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+            <input
+              type="range"
+              className="zoom-slider"
+              min={1}
+              max={3}
+              step={0.1}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+            />
+            <div className="crop-actions">
+              <button className="logout-btn" onClick={cancelCrop}>Cancel</button>
+              <button className="btn" onClick={confirmCrop}>Crop & upload</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="admin-header">
         <div>
           <h1>Kalakunj</h1>
