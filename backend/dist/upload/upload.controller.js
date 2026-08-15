@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UploadController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const platform_express_1 = require("@nestjs/platform-express");
 const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const cloudinary_provider_1 = require("./cloudinary.provider");
@@ -37,12 +38,18 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)(),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiConsumes)('multipart/form-data'),
+    (0, swagger_1.ApiOperation)({ summary: 'Upload an image to Cloudinary (admin only)' }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: 'Returns the uploaded image URL.', type: Object }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized.' }),
     __param(0, (0, common_1.UploadedFile)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UploadController.prototype, "uploadImage", null);
 exports.UploadController = UploadController = __decorate([
+    (0, swagger_1.ApiTags)('upload'),
     (0, common_1.Controller)('upload'),
     __param(0, (0, common_1.Inject)(cloudinary_provider_1.CLOUDINARY_PROVIDER)),
     __metadata("design:paramtypes", [Object])
