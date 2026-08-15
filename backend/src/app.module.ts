@@ -14,7 +14,7 @@ import { Inquiry } from './entities/inquiry.entity';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: process.env.DATABASE_URL,
+      url: process.env.DB_URL,
       entities: [User, Product, Inquiry],
       synchronize: true, // fine for dev; switch to migrations for production
     }),
