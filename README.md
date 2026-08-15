@@ -46,4 +46,13 @@ Shows all products currently in the catalogue, in the order customers will see t
 ## Notes
 - Image uploads require valid backend credentials (Cloudinary) configured on the server.
 - For any issues, contact the site administrator.
+
+---
+
+## API Documentation (Swagger)
+
+Swagger docs are available at:
+`http://localhost:3000/api/docs`
+
+Use this to explore all available endpoints, request/response schemas, and test API calls directly from the browser.
 "# kalakunj-nestjs-project" 

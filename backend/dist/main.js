@@ -19,7 +19,7 @@ async function bootstrap() {
     swagger_1.SwaggerModule.setup('api/docs', app, document);
     await app.listen(process.env.PORT || 3000);
     console.log(`Catalogue API running on http://localhost:${process.env.PORT || 3000}/api`);
-    console.log(`Swagger docs available at http://localhost:${process.env.PORT || 3000}/api/docs`);
+    console.log(`Swagger docs available at ${process.env.SWAGGER_URL || `http://localhost:${process.env.PORT || 3000}/api/docs`}`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
