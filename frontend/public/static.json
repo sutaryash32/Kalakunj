@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "type": "rewrite", "source": "/admin/*", "destination": "/admin/index.html" },
+    { "type": "rewrite", "source": "/*", "destination": "/index.html" }
+  ]
+}
