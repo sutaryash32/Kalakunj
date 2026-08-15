@@ -17,6 +17,9 @@ import { Inquiry } from './entities/inquiry.entity';
       url: process.env.DB_URL,
       entities: [User, Product, Inquiry],
       synchronize: true, // fine for dev; switch to migrations for production
+      extra: {
+      ssl: { rejectUnauthorized: false }
+  }
     }),
     AuthModule,
     CatalogueModule,
