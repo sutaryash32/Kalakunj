@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
-import Cropper from 'react-easy-crop';
-import { getCroppedImageFile } from '../utils/cropImage.js';
+import ReactCrop from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+import { getCroppedImageFile, rotateImageSrc } from '../utils/cropImage.js';
 
 export default function AdminDashboard() {
   const [token, setToken] = useState(() => sessionStorage.getItem('admin-token'));
@@ -16,9 +17,10 @@ export default function AdminDashboard() {
   const [dragIndex, setDragIndex] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [crop, setCrop] = useState({ unit: '%', x: 10, y: 10, width: 80, height: 80 });
+  const [completedCrop, setCompletedCrop] = useState(null);
+  const [rotation, setRotation] = useState(0);
+  const imgRef = useRef(null);
 
   useEffect(() => {
     if (token) refreshList();
@@ -76,23 +78,28 @@ export default function AdminDashboard() {
     const reader = new FileReader();
     reader.onload = () => {
       setRawImageSrc(reader.result);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setCroppedAreaPixels(null);
+      setCrop({ unit: '%', x: 10, y: 10, width: 80, height: 80 });
+      setRotation(0);
+      setCompletedCrop(null);
       setCropModalOpen(true);
       e.target.value = '';
     };
     reader.readAsDataURL(file);
   }
 
-  function onCropComplete(_, pixels) {
-    setCroppedAreaPixels(pixels);
+  async function handleRotationChange(newRotation) {
+    if (!rawImageSrc) return;
+    const rotated = await rotateImageSrc(rawImageSrc, newRotation);
+    setRawImageSrc(rotated);
+    setRotation(newRotation);
+    setCrop({ unit: '%', x: 10, y: 10, width: 80, height: 80 });
+    setCompletedCrop(null);
   }
 
   async function confirmCrop() {
-    if (!rawImageSrc || !croppedAreaPixels) return;
+    if (!rawImageSrc || !completedCrop || !imgRef.current) return;
     try {
-      const croppedFile = await getCroppedImageFile(rawImageSrc, croppedAreaPixels, 'product.jpg');
+      const croppedFile = await getCroppedImageFile(rawImageSrc, completedCrop, imgRef.current, 'product.jpg');
       const res = await api.uploadImage(token, croppedFile);
       setUploadedUrl(res.url);
       setPreview(res.url);
@@ -101,14 +108,15 @@ export default function AdminDashboard() {
     } finally {
       setCropModalOpen(false);
       setRawImageSrc(null);
-      setCroppedAreaPixels(null);
+      setCompletedCrop(null);
+      setRotation(0);
     }
   }
 
   function cancelCrop() {
     setCropModalOpen(false);
     setRawImageSrc(null);
-    setCroppedAreaPixels(null);
+    setCompletedCrop(null);
   }
 
   async function handleAdd() {
@@ -214,28 +222,28 @@ export default function AdminDashboard() {
           <div className="crop-box">
             <h3>Crop image</h3>
             <div className="crop-stage">
-              <Cropper
-                image={rawImageSrc}
+              <ReactCrop
                 crop={crop}
-                zoom={zoom}
-                aspect={340 / 520}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
+                onChange={setCrop}
+                onComplete={(c) => setCompletedCrop(c)}
+              >
+                <img ref={imgRef} src={rawImageSrc} alt="Crop preview" />
+              </ReactCrop>
             </div>
-            <input
-              type="range"
-              className="zoom-slider"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-            />
             <div className="crop-actions">
               <button className="logout-btn" onClick={cancelCrop}>Cancel</button>
               <button className="btn" onClick={confirmCrop}>Crop & upload</button>
+            </div>
+            <div className="crop-actions">
+              {[0, 90, 180, 270].map((deg) => (
+                <button
+                  key={deg}
+                  className={`rotation-btn ${rotation === deg ? 'active' : ''}`}
+                  onClick={() => handleRotationChange(deg)}
+                >
+                  {deg}°
+                </button>
+              ))}
             </div>
           </div>
         </div>
