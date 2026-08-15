@@ -22,7 +22,7 @@ export class CatalogueService {
   async createProduct(dto: CreateProductDto) {
     const maxSort = await this.productsRepo
       .createQueryBuilder()
-      .select('MAX(sortOrder)', 'max')
+      .select('MAX("sortOrder")', 'max')
       .getRawOne();
     const nextSort = (maxSort?.max ?? -1) + 1;
     const product = this.productsRepo.create({
